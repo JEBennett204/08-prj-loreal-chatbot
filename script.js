@@ -10,9 +10,10 @@ const messages = [];
  * Helper function to convert simple markdown (**bold**, *italic*) to HTML.
  * Only handles **bold** and *italic* using <strong> and <em>.
  * Escapes HTML to prevent injection.
+ * Emojis are preserved by default in JS and HTML, so no special handling is needed.
  */
 function markdownToHtml(text) {
-  // Escape HTML special characters
+  // Escape HTML special characters, but preserve emoji characters
   let safe = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -22,6 +23,8 @@ function markdownToHtml(text) {
   safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   // Convert *italic*
   safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  // Emojis are Unicode and will render as-is in HTML
+
   return safe;
 }
 
@@ -64,7 +67,16 @@ function addMessageBubble(role, text) {
 // Function to render all messages
 function renderMessages() {
   chatWindow.innerHTML = "";
-  messages.forEach((msg) => {
+  // Hide the very first user message ("what is your name?")
+  messages.forEach((msg, idx) => {
+    // If it's the first message and it's a user message, skip rendering it
+    if (
+      idx === 0 &&
+      msg.role === "user" &&
+      msg.content === "what is your name?"
+    ) {
+      return;
+    }
     addMessageBubble(msg.role, msg.content);
   });
 }
@@ -168,4 +180,50 @@ userInput.addEventListener("keydown", (e) => {
     e.preventDefault();
     chatForm.dispatchEvent(new Event("submit"));
   }
+});
+
+// On page load, ask "what is your name?" (hidden from user) and display only Joséphine's response
+window.addEventListener("DOMContentLoaded", async () => {
+  // Add the hidden user message to the conversation history
+  messages.push({ role: "user", content: "what is your name?" });
+
+  // Show typing indicator
+  const typingBubble = document.createElement("div");
+  typingBubble.classList.add("chat-bubble", "assistant", "typing");
+  typingBubble.textContent = "Joséphine is thinking...";
+  chatWindow.appendChild(typingBubble);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+
+  // Prepare history array for payload
+  const history = messages.map((msg) => ({
+    role: msg.role,
+    content: msg.content,
+  }));
+
+  let reply = "";
+  try {
+    // Send POST request to Cloudflare Worker with history
+    const res = await fetch(
+      "https://loralchatbot-worker-gca.bennett-j1804.workers.dev/",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ history }),
+      }
+    );
+    if (!res.ok) throw new Error("Joséphine endpoint failed");
+    const data = await res.json();
+    reply = data.reply || "";
+    if (!reply) throw new Error("No response from Joséphine");
+  } catch (err) {
+    reply =
+      "Sorry, I’m having trouble connecting right now. Please try again later.";
+  }
+
+  // Remove typing indicator
+  typingBubble.remove();
+
+  // Add only Joséphine's response to the chat
+  messages.push({ role: "assistant", content: reply });
+  renderMessages();
 });
