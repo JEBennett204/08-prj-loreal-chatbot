@@ -21,13 +21,23 @@ body {
 /* header */
 .site-header {
   text-align: center;
-  padding-top: 50px;
+  padding-top: 0; /* Remove top padding so text is close to logo */
 }
 
 .site-title {
   font-size: 22px;
   font-weight: 500;
   margin-bottom: 10px;
+}
+
+/* logo */
+.loreal-logo {
+  display: block;
+  margin: 2rem auto 0rem auto; /* Remove bottom margin so logo and text nearly touch */
+  max-width: 220px;
+  width: 40vw;
+  height: auto;
+  object-fit: contain;
 }
 
 /* chat window */
@@ -140,4 +150,103 @@ body {
 
 .site-footer a:hover {
   color: #666666;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #fff;
+  color: #222;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90vw;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+  position: relative;
+  margin: 0 auto; /* Ensures horizontal centering if needed */
+}
+
+.close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #000;
+}
+
+/* Bubble container for alignment */
+.bubble-container {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+
+/* User bubbles align right, assistant left */
+.bubble-container.user {
+  justify-content: flex-end;
+}
+.bubble-container.assistant {
+  justify-content: flex-start;
+}
+
+/* Assistant avatar styling */
+.assistant-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  background: #fff;
+  border: 2px solid #e5c77f; /* gold accent */
+  flex-shrink: 0;
+}
+
+/* Chat bubble tweaks for new layout */
+.chat-bubble {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 18px;
+  line-height: 1.5;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: opacity 0.3s;
+  opacity: 1;
+  word-break: break-word;
+}
+
+.chat-bubble.user {
+  background: #000;
+  color: #fff;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 18px;
+  margin-left: 40px;
+}
+
+.chat-bubble.assistant {
+  background: #fffbe6;
+  color: #222;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 18px;
+  margin-right: 40px;
+  border: 1px solid #e5c77f; /* gold accent */
 }

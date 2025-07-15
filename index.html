@@ -18,8 +18,9 @@
   <body>
     <div class="page-wrapper">
       <!------- Header / Branding ------->
+      <img src="img/loreal-logo.png" alt="L'Oréal logo" class="loreal-logo" />
       <header class="site-header">
-        <h1 class="site-title">Smart Product Advisor</h1>
+        <h1 class="site-title">Smart Routine and Product Advisor</h1>
       </header>
 
       <!------- Chat Area ------->
@@ -49,18 +50,75 @@
 
       <!------- Footer Links ------->
       <footer class="site-footer">
-        <p>&copy; 2025 Company Name. All rights reserved.</p>
+        <p>&copy; 2025 L'Oréal. All rights reserved.</p>
         <nav>
-          <!-- These URLs are placeholders -->
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Use</a>
-          <a href="#">Contact</a>
+          <a
+            href="https://www.loreal.com/en/group/global-privacy-policy/"
+            target="_blank"
+            rel="noopener"
+            >Privacy Policy</a
+          >
+          <a
+            href="https://www.loreal.com/en/group/global-terms-of-use/"
+            target="_blank"
+            rel="noopener"
+            >Terms of Use</a
+          >
+          <a href="#" id="contactBtn">Contact</a>
         </nav>
       </footer>
+
+      <!-- Contact Modal -->
+      <div id="contactModal" class="modal" style="display: none">
+        <div class="modal-content">
+          <span id="closeModal" class="close">&times;</span>
+          <h2>Contact Information</h2>
+          <p>
+            Website:
+            <a href="https://www.loreal.com" target="_blank" rel="noopener"
+              >www.loreal.com</a
+            ><br />
+            E-mail: <a href="mailto:contact@loreal.com">contact@loreal.com</a
+            ><br />
+            Telephone: +33 (0)1 47 56 70 00<br />
+            <br />
+            Director of Publication: Benoît Lozé<br />
+            Publisher: L’ORÉAL Company, incorporated in France as a "Société
+            Anonyme", with capital of €106.863.072,80, having its registered
+            offices at 14, rue Royale, 75008 in Paris - France, registered with
+            the Paris Registry of Trade and Companies under number 632 012 100
+            acting in the name and on behalf of its brand L’ORÉAL.<br />
+            <br />
+            Hosted by: Microsoft Ireland Operations Limited, One Microsoft
+            Place, South County Industrial Park, Leopardstown, Dublin 18,
+            Ireland D18 P521, registered with the Dublin Registry of Trade and
+            Companies under number 419 423 728;<br />
+            Telephone: +353 1850 940 940
+          </p>
+        </div>
+      </div>
     </div>
 
     <!-- secrets.js can be removed when using Cloudflare Workers for API requests -->
     <script src="secrets.js"></script>
     <script src="script.js"></script>
+    <script>
+      // Show the contact modal when Contact is clicked
+      document.getElementById("contactBtn").onclick = function (e) {
+        e.preventDefault();
+        document.getElementById("contactModal").style.display = "block";
+      };
+      // Hide the modal when the close button is clicked
+      document.getElementById("closeModal").onclick = function () {
+        document.getElementById("contactModal").style.display = "none";
+      };
+      // Hide the modal when clicking outside the modal content
+      window.onclick = function (event) {
+        const modal = document.getElementById("contactModal");
+        if (event.target === modal) {
+          modal.style.display = "none";
+        }
+      };
+    </script>
   </body>
 </html>
