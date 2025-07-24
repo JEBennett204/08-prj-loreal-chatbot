@@ -1,2 +1,4 @@
-# Secrets file containing API keys
+# Secrets files
 secrets.js
+RESOURCE_cloudflare-worker.js
+cloudflare-worker.js

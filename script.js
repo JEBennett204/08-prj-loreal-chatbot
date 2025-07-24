@@ -103,64 +103,33 @@ chatForm.addEventListener("submit", async (e) => {
   chatWindow.appendChild(typingBubble);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 
-  // Prepare history array for payload (excluding system prompt)
-  const history = messages.map((msg) => ({
-    role: msg.role,
-    content: msg.content,
-  }));
+  // Prepare payload with both input and history
+  const payload = { input: question, history: messages };
 
   let reply = "";
-  let josephineFailed = false;
   try {
-    // Send POST request to Cloudflare Worker with history
-    const res = await fetch(
-      "https://loralchatbot-worker-gca.bennett-j1804.workers.dev/",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history }),
-      }
-    );
-    if (!res.ok) throw new Error("Joséphine endpoint failed");
-    const data = await res.json();
-    // ✅ Extract reply from .reply (matches Worker response)
-    reply = data.reply || "";
-    if (!reply) throw new Error("No response from Joséphine");
-  } catch (err) {
-    josephineFailed = true;
-    // Fallback: try OpenAI API with same history and a system prompt
-    try {
-      // Insert a system prompt at the start
-      const openaiHistory = [
+    // Check if the question is beauty-related before sending to the worker
+    if (!isBeautyRelated(question)) {
+      reply =
+        "I'm here to help with beauty, skincare, haircare, and L’Oréal products or routines. Please ask me something related to those topics!";
+    } else {
+      // Send POST request to Cloudflare Worker with { input, history }
+      const res = await fetch(
+        "https://loralchatbot-worker-gca.bennett-j1804.workers.dev/",
         {
-          role: "system",
-          content:
-            "You are a helpful assistant for L'Oréal. Answer user questions helpfully and concisely.",
-        },
-        ...history,
-      ];
-      const res = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Insert your OpenAI API key here, or handle securely in production
-          Authorization: "Bearer YOUR_OPENAI_API_KEY",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: openaiHistory,
-          max_tokens: 512,
-        }),
-      });
-      if (!res.ok) throw new Error("OpenAI fallback failed");
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!res.ok) throw new Error("Joséphine endpoint failed");
       const data = await res.json();
-      reply =
-        (data.choices && data.choices[0]?.message?.content) ||
-        "Sorry, I’m having trouble connecting right now. Please try again later.";
-    } catch (err2) {
-      reply =
-        "Sorry, I’m having trouble connecting right now. Please try again later.";
+      reply = data.reply || "";
+      if (!reply) throw new Error("No response from Joséphine");
     }
+  } catch (err) {
+    reply =
+      "Sorry, I’m having trouble connecting right now. Please try again later.";
   }
 
   // Remove typing indicator
@@ -194,27 +163,27 @@ window.addEventListener("DOMContentLoaded", async () => {
   chatWindow.appendChild(typingBubble);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 
-  // Prepare history array for payload
-  const history = messages.map((msg) => ({
-    role: msg.role,
-    content: msg.content,
-  }));
+  // Only send the initial question to the worker, since it's always beauty-related
+  const payload = { input: "What can you do?", history: messages };
 
   let reply = "";
   try {
-    // Send POST request to Cloudflare Worker with history
     const res = await fetch(
       "https://loralchatbot-worker-gca.bennett-j1804.workers.dev/",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history }),
+        body: JSON.stringify(payload),
       }
     );
     if (!res.ok) throw new Error("Joséphine endpoint failed");
     const data = await res.json();
     reply = data.reply || "";
     if (!reply) throw new Error("No response from Joséphine");
+    // Ensure Joséphine introduces herself by name in the first message
+    if (!/joséphine/i.test(reply)) {
+      reply = `Bonjour, I'm Joséphine. ${reply}`;
+    }
   } catch (err) {
     reply =
       "Sorry, I’m having trouble connecting right now. Please try again later.";
@@ -227,3 +196,49 @@ window.addEventListener("DOMContentLoaded", async () => {
   messages.push({ role: "assistant", content: reply });
   renderMessages();
 });
+
+// Helper function to check if a question is beauty-related
+function isBeautyRelated(text) {
+  // Expanded keyword check to allow purchase and buying intent
+  const keywords = [
+    "beauty",
+    "skincare",
+    "skin care",
+    "hair",
+    "makeup",
+    "cosmetic",
+    "routine",
+    "product",
+    "l'oréal",
+    "loreal",
+    "shampoo",
+    "conditioner",
+    "serum",
+    "moisturizer",
+    "cleanser",
+    "foundation",
+    "lipstick",
+    "mascara",
+    "fragrance",
+    "perfume",
+    "face",
+    "body",
+    "cream",
+    "buy",
+    "purchase",
+    "where can i buy",
+    "where to buy",
+    "order",
+    "shop",
+    "store",
+    "find",
+    "availability",
+    "in stock",
+    "stockist",
+    "retailer",
+    "online",
+    "price",
+  ];
+  const lower = text.toLowerCase();
+  return keywords.some((word) => lower.includes(word));
+}
